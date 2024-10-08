@@ -1,0 +1,25 @@
+{
+  "name": "vaultblog",
+  "version": "1.0.0",
+  "description": "A self made blogging page by Kuldeep Kumar Pandit",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "start": "node index.js",
+    "dev": "nodemon index.js"
+  },
+  "author": "Kuldeep Kumar Pandit",
+  "license": "ISC",
+  "dependencies": {
+    "bcrypt": "^5.1.1",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
+    "express": "^4.21.0",
+    "jsonwebtoken": "^9.0.2",
+    "mongoose": "^8.7.0",
+    "multer": "^1.4.2",
+    "multer-gridfs-storage": "^5.0.2",
+    "nanoid": "^5.0.7",
+    "url": "^0.11.4"
+  }
+}
