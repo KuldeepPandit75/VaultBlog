@@ -1,15 +1,13 @@
 // Layout.js
 import React from 'react';
-import { Outlet, useLocation, Navigate } from 'react-router-dom';
+import { Outlet, Navigate } from 'react-router-dom';
 import Header from './components/header/Header';
 
-function Layout(props) {
-    const location = useLocation();
-    const isLoginRoute = location.pathname === '/login';
+function Layout({isAuthenticated, isUserAuthenticated}) {
 
-    return props.isAuthenticated ?
+    return isAuthenticated ?
         <>
-            <Header/>
+            <Header  isUserAuthenticated={isUserAuthenticated}/>
             <Outlet />
         </>
         :

@@ -10,7 +10,7 @@ export const SignupUser= async(req,res)=>{
         // const salt=await bcrypt.genSalt();
         const hashedPassword=await bcrypt.hash(req.body.password, 10);  
 
-        const user={username: req.body.username, name: req.body.name, password: hashedPassword};
+        const user={username: req.body.username, name: req.body.name, password: hashedPassword, profile:req.body.profile};
 
         let newUser = new User(user);
 
@@ -34,7 +34,7 @@ export const LoginUser=async(req,res)=>{
         if(match){
             const accessToken=jwt.sign(user.toJSON(),process.env.ACCESS_KEY);
 
-            return res.status(200).json({accessToken: accessToken, name:user.name,username: user.username});
+            return res.status(200).json({accessToken: accessToken, name:user.name,username: user.username,profile: user.profile});
         }else{
             return res.status(400).json({msg: "Password does not match"});
         }

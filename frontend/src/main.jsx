@@ -8,6 +8,8 @@ import Layout from './Layout.jsx'
 import Home from './components/home/Home.jsx'
 import Login from './components/account/Login.jsx'
 import CreatePost from './components/create/CreatePost.jsx'
+import DetailView from './components/Detail/DetailView.jsx'
+import UpdatePost from './components/update/UpdatePost.jsx'
 
 function App() {
 
@@ -17,9 +19,11 @@ function App() {
     createRoutesFromElements(
       <>
         <Route path='login' element={<Login isUserAuthenticated={isUserAuthenticated} />} />
-        <Route path='/' element={<Layout isAuthenticated={isAuthenticated} />}>
+        <Route path='/' element={<Layout isAuthenticated={isAuthenticated}  isUserAuthenticated={isUserAuthenticated}/>}>
           <Route path="" element={<Home />} />
           <Route path="create" element={<CreatePost/>}/>
+          <Route path="details/:id" element={<DetailView/>}/>
+          <Route path="post/:id/update" element={<UpdatePost/>}/>
         </Route>
       </>
     )

@@ -4,6 +4,7 @@ import { AddCircle as Add } from '@mui/icons-material';
 import { useLocation } from 'react-router';
 import { useSelector } from 'react-redux';
 import { API } from '../../service/api';
+import { useNavigate } from 'react-router';
 
 const Container = styled(Box)`
     margin: 0 100px
@@ -13,7 +14,7 @@ const Image = styled("img")({
     height: "50vh",
     width: "100%",
     objectFit: "cover",
-    objectPosition: "top"
+    objectPosition: "middle"
 })
 
 const StyledFormControl = styled(FormControl)`
@@ -49,6 +50,8 @@ const initialPost = {
 
 function CreatePost() {
 
+    const navigate=useNavigate();
+
     const [url,setUrl]=useState("/createpost2.jpg");
 
     const [post, setPost] = useState(initialPost);
@@ -62,37 +65,40 @@ function CreatePost() {
         setPost({ ...post, [e.target.name]: e.target.value })
     }
 
-    const uploadImage = async (selectedFile) => {
-        if (selectedFile) {
-            const formData = new FormData();
-            formData.append("name", selectedFile.name);
-            formData.append("file", selectedFile); // Append the selected file
-
-            try {
-                let imageURL = await API.uploadFile(formData);
-
-                if (imageURL.isSuccess) {
-                    setUrl(imageURL.data.url);
-                    setPost(prevPost => ({ ...prevPost, picture: imageURL.data.path })); // Set picture path in post
-                } else {
-                    console.error("Error uploading image");
-                }
-            } catch (error) {
-                console.error("Image upload failed: ", error);
-            }
+    const savePost= async()=>{
+        console.log(post)
+        const response= await API.createPost(post);
+        if(response.isSuccess){
+            navigate("/")
         }
     }
 
-    const handleFileChange = (e) => {
-        const selectedFile = e.target.files[0];
-        setFile(selectedFile); // Update the file state
-        uploadImage(selectedFile); // Call the upload function immediately
-    }
-
     useEffect(() => {
-        post.categories = location.search?.split("=")[1] || "All";
-        post.username = userData.username;
-    }, [location.search, userData.username]);
+        const uploadImage = async () => {
+            if (file) {
+                const formData = new FormData();
+                formData.append("name", file.name);
+                formData.append("file", file); // Append the selected file
+    
+                try {
+                    let imageURL = await API.uploadFile(formData);
+    
+                    if (imageURL.isSuccess) {
+                        setUrl(imageURL.data);
+                        setPost(prevPost => ({ ...prevPost, picture: imageURL.data })); // Set picture path in post
+                    } else {
+                        console.error("Error uploading image");
+                    }
+                } catch (error) {
+                    console.error("Image upload failed: ", error);
+                }
+            }
+        }
+        uploadImage(); // Call the upload function immediately
+
+        setPost(prevPost => ({ ...prevPost, categories: location.search?.split("=")[1] || "All" }));
+        setPost(prevPost => ({ ...prevPost, username: userData.username }));
+    }, [location.search, userData.username, file]);
 
 
     return (
@@ -104,10 +110,10 @@ function CreatePost() {
                     <label htmlFor='fileInput'>
                         <Add fontSize='large' color='action' />
                     </label>
-                    <input id="fileInput" type='file' className='hidden' onChange={(e)=>handleFileChange(e)}/>
+                    <input id="fileInput" type='file' className='hidden' onChange={(e)=>{setFile(e.target.files[0])}}/>
 
                     <InputTextField placeholder="Title" onChange={(e) => onValueChange(e)} name="title" />
-                    <Button variant="contained">Publish</Button>
+                    <Button variant="contained" onClick={()=>savePost()}>Publish</Button>
                 </StyledFormControl>
 
                 <TextArea minRows={5} placeholder='Tell your story....' onChange={(e) => onValueChange(e)} name="description" />

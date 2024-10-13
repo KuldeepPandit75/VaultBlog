@@ -7,7 +7,6 @@ dotenv.config();
 const username=process.env.MBD_USERNAME;
 const password=process.env.MBD_PASSWORD;
 
-console.log("aaa");
 
 const storage= new GridFsStorage({
     url: `mongodb+srv://${username}:${password}@cluster1.rbtvmid.mongodb.net/Blog?retryWrites=true&w=majority&appName=Cluster1`,
@@ -24,6 +23,4 @@ const storage= new GridFsStorage({
         }
     }
 })
-console.log("bbb")
-
-export default multer({storage: storage})
+export default multer({storage})

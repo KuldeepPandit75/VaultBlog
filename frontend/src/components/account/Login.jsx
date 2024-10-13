@@ -5,6 +5,7 @@ import { API } from "../../service/api";
 import { useDispatch } from "react-redux";
 import { setUser } from "../../features/blog/blogSlice";
 import { useNavigate } from "react-router";
+import { Alert } from "@mui/material";
 
 const Component = styled(Box)`
     overflow: hidden;
@@ -54,81 +55,109 @@ const Title = styled(Typography)`
     text-align: center;
 `
 
-const signupInitialValues={
-    name:"",
-    username:"",
-    password:""
+const signupInitialValues = {
+    name: "",
+    username: "",
+    password: "",
+    profile: ""
 }
 
-const loginInitialValues={
-    username:"",
-    password:""
+const loginInitialValues = {
+    username: "",
+    password: ""
 }
 
 function Login(props) {
     const [page, setPage] = useState("login")
-    const [signup, setSignup]=useState(signupInitialValues);
-    const [error,setError]=useState("");
-    const [login,setLogin]=useState(loginInitialValues);
-    const dispatch=useDispatch();
+    const [signup, setSignup] = useState(signupInitialValues);
+    const [error, setError] = useState("");
+    const [login, setLogin] = useState(loginInitialValues);
+    const dispatch = useDispatch();
+    const [file, setFile] = useState(null);
+    const [preview, setPreview] = useState(null);
 
-    const navigate= useNavigate();
+    const handleFileChange = (e) => {
+        const selectedFile = e.target.files[0];
+        setFile(selectedFile);
 
-    const togglePage=()=>{
-        if(page==="login"){
+        // Create a URL to show the image preview
+        const fileUrl = URL.createObjectURL(selectedFile);
+        setPreview(fileUrl);
+    };
+
+    useEffect(()=>{
+        const imageUpload=async()=>{
+            if(file){
+                let formData=new FormData();
+                formData.append("name",file.name);
+                formData.append("file",file);
+                const response=await API.uploadFile(formData);
+                if(response.isSuccess){
+                    setSignup(prevSign=>({...prevSign,profile:response.data}))
+                }
+            }
+        }
+        imageUpload();
+    },[file])
+
+    const navigate = useNavigate();
+
+    const togglePage = () => {
+        if (page === "login") {
             setPage("signup")
-        }else{
+        } else {
             setPage("login")
         }
     }
 
-    const onInputChange=(e)=>{
-        setSignup({...signup,[e.target.name]:e.target.value})
+    const onInputChange = (e) => {
+        setSignup({ ...signup, [e.target.name]: e.target.value })
     }
 
-    const signUpUser=async()=>{
+    const signUpUser = async () => {
         let response = await API.userSignup(signup);
-        
-        if(response.isSuccess){
+
+        if (response.isSuccess) {
             setError("");
             setSignup(signupInitialValues);
             togglePage("login");
-        }else{
+        } else {
             setError("Something went wrong! Please try again.")
         }
     }
 
-    const onValueChange=(e)=>{
-        setLogin({...login,[e.target.name]: e.target.value})
+    const onValueChange = (e) => {
+        setLogin({ ...login, [e.target.name]: e.target.value })
     }
 
-    const loginUser=async()=>{
-        let res=await API.userLogin(login);
-        if(res.isSuccess){
+    const loginUser = async () => {
+        let res = await API.userLogin(login);
+        if (res.isSuccess) {
             setError("");
             setLogin(loginInitialValues);
 
             sessionStorage.setItem("accessToken", `Bearer ${res.data.accessToken}`);
+            console.log(res.data);
 
             dispatch(setUser(res.data));
 
             props.isUserAuthenticated(true);
 
             navigate("/");
-        }else{
+        } else {
             setError("Unable to login")
         }
     }
 
-// Testing whether data is updating on redux or not
+    // Testing whether data is updating on redux or not
 
-////////////////
+    ////////////////
     // const test=useSelector((state)=> state.user);
-    
+
     // useEffect(()=>{
     //     console.log(test);
     // },[login])
-////////////////
+    ////////////////
 
     return (
         <Component>
@@ -138,21 +167,53 @@ function Login(props) {
             {page === "login" ?
                 <Wrapper>
                     <Title variant="h3">Welcome Back to VaultBlog!</Title>
-                    <TextField label="Enter Username" onChange={(e)=>onValueChange(e)} name="username"/>
-                    <TextField label="Enter Password" onChange={(e)=>onValueChange(e)} name="password"/>
-                    {error && <Typography>{error}</Typography>}
-                    <Butn variant="contained" onClick={()=>loginUser()}>Login</Butn>
-                    <Typography style={{ marginTop: "10px" }}>New to VaultBlog? <a href="#" onClick={()=>togglePage()} style={{ textDecoration: "none" }}>Signup!</a></Typography>
+                    <TextField label="Enter Username" onChange={(e) => onValueChange(e)} name="username" />
+                    <TextField label="Enter Password" onChange={(e) => onValueChange(e)} name="password" />
+                    {error && <Alert severity="error" onClose={() => { setError("") }}>{error}</Alert>}
+                    <Butn variant="contained" onClick={() => loginUser()}>Login</Butn>
+                    <Typography style={{ marginTop: "10px" }}>New to VaultBlog? <a href="#" onClick={() => togglePage()} style={{ textDecoration: "none" }}>Signup!</a></Typography>
                 </Wrapper>
                 :
                 <Wrapper>
                     <Title variant="h3">Welcome to VaultBlog!</Title>
-                    <TextField onChange={(e)=>onInputChange(e)} name="name" label="Enter Name" />
-                    <TextField onChange={(e)=>onInputChange(e)} name="username" label="Enter Username" />
-                    <TextField onChange={(e)=>onInputChange(e)} name="password" label="Set Password" />
-                    {error && <Typography>{error}</Typography>}
-                    <Butn variant="contained" onClick={()=>signUpUser()}>SignUp</Butn>
-                    <Typography style={{ marginTop: "10px" }}>Already have an Account? <a href="#" onClick={()=>togglePage()} style={{ textDecoration: "none" }}>Login!</a></Typography>
+                    <TextField onChange={(e) => onInputChange(e)} name="name" label="Enter Name" />
+                    <TextField onChange={(e) => onInputChange(e)} name="username" label="Enter Username" />
+                    <TextField onChange={(e) => onInputChange(e)} name="password" label="Set Password" />
+
+                    {/* Dp input  */}
+
+                    <Box display="flex" flexDirection="column" alignItems="center">
+                        <input
+                            accept="image/*"
+                            style={{ display: 'none' }}
+                            id="upload-file"
+                            type="file"
+                            onChange={handleFileChange}
+                        />
+                        <label htmlFor="upload-file">
+                            <Button variant="contained" component="span">
+                                Upload File
+                            </Button>
+                        </label>
+
+
+                        {preview && (
+                            <Box mt={2}>
+                                <img
+                                    src={preview}
+                                    alt="Preview"
+                                    style={{ width: '50px', height: 'auto' }}
+                                />
+                            </Box>
+                        )}
+                        {file && <p>Selected file: {file.name}</p>}
+
+                    </Box>
+
+
+                    {error && <Alert severity="error">{error}</Alert>}
+                    <Butn variant="contained" onClick={() => signUpUser()}>SignUp</Butn>
+                    <Typography style={{ marginTop: "10px" }}>Already have an Account? <a href="#" onClick={() => togglePage()} style={{ textDecoration: "none" }}>Login!</a></Typography>
                 </Wrapper>
             }
         </Component>

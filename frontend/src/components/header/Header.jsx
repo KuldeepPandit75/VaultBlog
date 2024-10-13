@@ -15,18 +15,28 @@ import MenuItem from '@mui/material/MenuItem';
 import AdbIcon from '@mui/icons-material/Adb';
 import { styled } from '@mui/material';
 import { Link } from 'react-router-dom';
+import { useSelector } from 'react-redux';
+import { useEffect } from 'react';
 
-const Logo=styled(Box)`
+const Logo = styled(Box)`
     margin-right: 1px;
 `
 
-const pages = ['Home', 'About', 'Contact', ];
-const links = ['/home', '/about', '/contact', ];
+const pages = ['Home', 'About', 'Contact',];
+const links = ['/home', '/about', '/contact',];
 const settings = ['Profile', 'Account', 'Dashboard', 'Logout'];
 
-function Header() {
+function Header({ isUserAuthenticated }) {
   const [anchorElNav, setAnchorElNav] = useState(null);
+  const [url, setUrl] = useState("");
   const [anchorElUser, setAnchorElUser] = useState(null);
+  const userData = useSelector(state => state.user)
+  console.log(userData)
+
+  useEffect(() => {
+    setUrl(userData.profile)
+    console.log(url);
+  })
 
   const handleOpenNavMenu = (event) => {
     setAnchorElNav(event.currentTarget);
@@ -43,11 +53,16 @@ function Header() {
     setAnchorElUser(null);
   };
 
+  const userLogout = () => {
+    isUserAuthenticated(false);
+    sessionStorage.setItem("accessToken", "")
+  }
+
   return (
-    <AppBar position="static" sx={{background:"#E2E9E6"}}>
+    <AppBar position="sticky" sx={{ background: "#E2E9E6", top: 0 }}>
       <Container maxWidth="xl">
-        <Toolbar disableGutters sx={{display:'flex', justifyContent:"space-between"}}>
-          <Logo sx={{ display: { xs: 'none', md: 'flex' }, mr: 1 }}><img src='./VB.png' width={40}/></Logo>
+        <Toolbar disableGutters sx={{ display: 'flex', justifyContent: "space-between" }}>
+          <Logo sx={{ display: { xs: 'none', md: 'flex' }, mr: 1 }}><img src='./VB.png' width={40} /></Logo>
           {/* <Typography
             variant="h6"
             noWrap
@@ -90,26 +105,26 @@ function Header() {
               }}
               open={Boolean(anchorElNav)}
               onClose={handleCloseNavMenu}
-              sx={{ display: { xs: 'block', md: 'none' }}}
+              sx={{ display: { xs: 'block', md: 'none' } }}
             >
               <Link to={"/"}>
                 <MenuItem onClick={handleCloseNavMenu}>
-                  <Typography sx={{ textAlign: 'center' , color:"#342E37"}}>Home</Typography>
-                </MenuItem> 
+                  <Typography sx={{ textAlign: 'center', color: "#342E37" }}>Home</Typography>
+                </MenuItem>
               </Link>
               <Link to={"/about"}>
                 <MenuItem onClick={handleCloseNavMenu}>
-                  <Typography sx={{ textAlign: 'center' , color:"#342E37"}}>About</Typography>
-                </MenuItem> 
+                  <Typography sx={{ textAlign: 'center', color: "#342E37" }}>About</Typography>
+                </MenuItem>
               </Link>
               <Link to={"/contact"}>
                 <MenuItem onClick={handleCloseNavMenu}>
-                  <Typography sx={{ textAlign: 'center' , color:"#342E37"}}>Contact</Typography>
-                </MenuItem> 
+                  <Typography sx={{ textAlign: 'center', color: "#342E37" }}>Contact</Typography>
+                </MenuItem>
               </Link>
             </Menu>
           </Box>
-          <Logo sx={{ display: { xs: 'flex', md: 'none' }, mr: 1 }}><img src='./VB.png' width={40}/></Logo>
+          <Logo sx={{ display: { xs: 'flex', md: 'none' }, mr: 1 }}><img src='./VB.png' width={40} /></Logo>
           <Typography
             variant="h5"
             noWrap
@@ -127,36 +142,36 @@ function Header() {
             }}
           >
           </Typography>
-          <Box sx={{ flexGrow: 1, display: { xs: 'none', md: 'flex' }, justifyContent:"center" }}>
-              <Link to={"/"}>
+          <Box sx={{ flexGrow: 1, display: { xs: 'none', md: 'flex' }, justifyContent: "center" }}>
+            <Link to={"/"}>
               <Button
                 onClick={handleCloseNavMenu}
-                sx={{ my: 2, color: '#342E37', display: 'block', fontWeight:"600",mx:3 }}
+                sx={{ my: 2, color: '#342E37', display: 'block', fontWeight: "600", mx: 3 }}
               >
                 Home
               </Button>
-              </Link>
-              <Link to={"/about"}>
+            </Link>
+            <Link to={"/about"}>
               <Button
                 onClick={handleCloseNavMenu}
-                sx={{ my: 2, color: '#342E37', display: 'block', fontWeight:"600",mx:3 }}
+                sx={{ my: 2, color: '#342E37', display: 'block', fontWeight: "600", mx: 3 }}
               >
                 About
               </Button>
-              </Link>
-              <Link to={"/contact"}>
+            </Link>
+            <Link to={"/contact"}>
               <Button
                 onClick={handleCloseNavMenu}
-                sx={{ my: 2, color: '#342E37', display: 'block', fontWeight:"600",mx:3 }}
+                sx={{ my: 2, color: '#342E37', display: 'block', fontWeight: "600", mx: 3 }}
               >
                 Contact
               </Button>
-              </Link>
+            </Link>
           </Box>
           <Box sx={{ flexGrow: 0 }}>
             <Tooltip title="Open settings">
               <IconButton onClick={handleOpenUserMenu} sx={{ p: 0 }}>
-                <Avatar alt="Remy Sharp" src="./profile.JPG" />
+                <Avatar alt="Remy Sharp" src={url} />
               </IconButton>
             </Tooltip>
             <Menu
@@ -175,11 +190,26 @@ function Header() {
               open={Boolean(anchorElUser)}
               onClose={handleCloseUserMenu}
             >
-              {settings.map((setting) => (
-                <MenuItem key={setting} onClick={handleCloseUserMenu}>
-                  <Typography sx={{ textAlign: 'center' }}>{setting}</Typography>
-                </MenuItem>
-              ))}
+              {settings.map((setting) => {
+                if (setting === "Logout") {
+                  return (
+                    <MenuItem key={setting} onClick={() => { handleCloseUserMenu(); userLogout() }}>
+                      <Link to="/login">
+                        <Typography sx={{ textAlign: 'center' }}>{setting}</Typography>
+                      </Link>
+                    </MenuItem>
+
+                  )
+                } else {
+                  return (
+                    <MenuItem key={setting} onClick={() => { handleCloseUserMenu() }}>
+                      <Typography sx={{ textAlign: 'center' }}>{setting}</Typography>
+                    </MenuItem>
+                  )
+                }
+              }
+              )}
+
             </Menu>
           </Box>
         </Toolbar>
